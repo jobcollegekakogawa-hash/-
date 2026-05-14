@@ -248,45 +248,61 @@ async function exportVideoData() {
   }
 
   stopPlayback();
+  slides = buildSlidesFromContract(contractText.value);
+  currentSlide = 0;
+  renderSlide();
   exportBtn.disabled = true;
+  exportBtn.textContent = "生成中...";
   downloadLink.hidden = true;
-  exportStatus.textContent = "動画データを生成中です...";
+  exportStatus.textContent = "動画データを生成中です。完了後に自動でダウンロードを開始します...";
 
   const chunks = [];
-  const stream = videoCanvas.captureStream(30);
-  const recorder = createRecorder(stream, chunks);
-  const recordingFinished = new Promise((resolve) => {
-    recorder.addEventListener("stop", resolve, { once: true });
-  });
+  let stream;
 
-  recorder.start();
+  try {
+    stream = videoCanvas.captureStream(30);
+    const recorder = createRecorder(stream, chunks);
+    const recordingFinished = new Promise((resolve) => {
+      recorder.addEventListener("stop", resolve, { once: true });
+    });
 
-  for (let slideIndex = 0; slideIndex < slides.length; slideIndex += 1) {
-    const slide = slides[slideIndex];
-    const steps = Math.ceil(slideDurationMs / exportFrameIntervalMs);
+    recorder.start();
 
-    for (let step = 0; step <= steps; step += 1) {
-      const progress = Math.min(step / steps, 1);
-      drawVideoSlide(slide, slideIndex, progress);
-      await wait(exportFrameIntervalMs);
+    for (let slideIndex = 0; slideIndex < slides.length; slideIndex += 1) {
+      const slide = slides[slideIndex];
+      const steps = Math.ceil(slideDurationMs / exportFrameIntervalMs);
+
+      for (let step = 0; step <= steps; step += 1) {
+        const progress = Math.min(step / steps, 1);
+        drawVideoSlide(slide, slideIndex, progress);
+        await wait(exportFrameIntervalMs);
+      }
     }
+
+    recorder.stop();
+    await recordingFinished;
+
+    const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
+    const url = URL.createObjectURL(blob);
+
+    if (downloadLink.href.startsWith("blob:")) {
+      URL.revokeObjectURL(downloadLink.href);
+    }
+
+    downloadLink.href = url;
+    downloadLink.hidden = false;
+    exportStatus.textContent = `動画データを作成しました（${(blob.size / 1024 / 1024).toFixed(2)}MB）。自動で開始しない場合は下のリンクからダウンロードしてください。`;
+    downloadLink.click();
+  } catch (error) {
+    exportStatus.textContent = `動画データの生成に失敗しました: ${error.message}`;
+  } finally {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
+
+    exportBtn.disabled = false;
+    exportBtn.textContent = "動画データを作成";
   }
-
-  recorder.stop();
-  await recordingFinished;
-  stream.getTracks().forEach((track) => track.stop());
-
-  const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
-  const url = URL.createObjectURL(blob);
-
-  if (downloadLink.href.startsWith("blob:")) {
-    URL.revokeObjectURL(downloadLink.href);
-  }
-
-  downloadLink.href = url;
-  downloadLink.hidden = false;
-  exportStatus.textContent = `動画データを作成しました（${(blob.size / 1024 / 1024).toFixed(2)}MB）。`;
-  exportBtn.disabled = false;
 }
 
 contractFile.addEventListener("change", async (event) => {
