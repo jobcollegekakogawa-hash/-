@@ -1,0 +1,10 @@
+{
+  "name": "contract-video-explainer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "契約書データを読み込み、動画風の説明と直筆署名案内を行う静的Webアプリのプロトタイプです。",
+  "scripts": {
+    "start": "python3 -m http.server 4173",
+    "test": "node --check app.js"
+  }
+}
