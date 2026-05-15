@@ -28,6 +28,46 @@ npm run build
 
 `dist/contract-video-explainer.html` にCSSとJavaScriptを埋め込んだ単一HTML版を生成します。このファイルをブラウザで直接開くと、サーバーなしで契約書テキスト入力、説明スライド生成、WebM動画データのダウンロードを試せます。
 
+
+## `dist/contract-video-explainer.html` をダウンロード／ブラウザで開く方法
+
+### 方法1: この作業環境のファイル一覧からダウンロードする
+
+1. 左側のファイル一覧で `dist` フォルダを開きます。
+2. `contract-video-explainer.html` を選択します。
+3. エディタ右上またはファイルメニューの **Download** / **ダウンロード** を押して、PCへ保存します。
+4. 保存した `contract-video-explainer.html` をダブルクリックすると、ChromeやEdgeなどのブラウザで開けます。
+
+### 方法2: ターミナルから場所を確認して開く
+
+このリポジトリ内では、ファイルは次の場所にあります。
+
+```text
+/workspace/-/dist/contract-video-explainer.html
+```
+
+ローカルPCへコピーできる環境では、このHTMLファイルを任意のフォルダへ保存してから、ブラウザへドラッグ＆ドロップするか、ダブルクリックして開いてください。
+
+### 方法3: サーバー経由で開く
+
+```bash
+npm start
+```
+
+起動後、ポートプレビュー機能がある環境では **port 4173** を開き、次のパスへアクセスします。
+
+```text
+/dist/contract-video-explainer.html
+```
+
+ローカルPC上で起動している場合は、次のURLを開きます。
+
+```text
+http://localhost:4173/dist/contract-video-explainer.html
+```
+
+表示されたページを保存したい場合は、ブラウザで **Ctrl+S**（Macは **Command+S**）を押してHTMLとして保存できます。
+
 ## テスト
 
 ```bash
