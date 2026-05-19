@@ -57,8 +57,15 @@ function hasAny(text, words) {
   return words.some((word) => text.includes(word));
 }
 
+function extractBoldPhrases(rawText) {
+  const markdownBold = [...rawText.matchAll(/\*\*(.+?)\*\*/g)].map((match) => match[1].trim());
+  const htmlBold = [...rawText.matchAll(/<b>(.+?)<\/b>/g)].map((match) => match[1].trim());
+  return [...new Set([...markdownBold, ...htmlBold].filter(Boolean))];
+}
+
 function buildSlidesFromContract(rawText) {
   const text = rawText.replace(/\s+/g, " ").trim();
+  const boldPhrases = extractBoldPhrases(rawText);
 
   if (!text) {
     return [...defaultSlides];
@@ -80,7 +87,7 @@ function buildSlidesFromContract(rawText) {
     ? `解約・解除条項があります。特に「${notice}」などの通知期限を確認しましょう。`
     : "解約・解除・終了条件が明確に書かれているか確認しましょう。";
 
-  return [
+  const generatedSlides = [
     {
       title: "契約書の全体像",
       body: `読み込んだ契約書は約${text.length.toLocaleString()}文字です。重要な条件を順番に確認します。`,
@@ -106,10 +113,24 @@ function buildSlidesFromContract(rawText) {
       body: "説明内容に不明点がなければ、最終版の紙の契約書を確認し、ご本人が直筆で署名してください。",
     },
   ];
+
+  if (boldPhrases.length > 0) {
+    generatedSlides.splice(1, 0, {
+      title: "太文字の重要条項",
+      body: `太文字として強調された条項です: ${boldPhrases.slice(0, 3).join(" / ")}。内容を必ず確認してください。`,
+      emphasis: boldPhrases,
+    });
+  }
+
+  return generatedSlides;
 }
 
 
 function buildNarration(slide) {
+  if (slide.emphasis && slide.emphasis.length > 0) {
+    return `重要ポイントです。${slide.title}。太文字の条項を読み上げます。${slide.emphasis.join("。")}。${slide.body}`;
+  }
+
   return `重要ポイントです。${slide.title}。${slide.body}`;
 }
 
