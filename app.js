@@ -24,6 +24,7 @@ const defaultSlides = [
 let slides = [...defaultSlides];
 let currentSlide = 0;
 let timerId = null;
+let voiceEnabled = false;
 
 const contractFile = document.querySelector("#contractFile");
 const contractText = document.querySelector("#contractText");
@@ -34,6 +35,8 @@ const slideBody = document.querySelector("#slideBody");
 const prevBtn = document.querySelector("#prevBtn");
 const playBtn = document.querySelector("#playBtn");
 const nextBtn = document.querySelector("#nextBtn");
+const voiceBtn = document.querySelector("#voiceBtn");
+const voiceStatus = document.querySelector("#voiceStatus");
 const exportBtn = document.querySelector("#exportBtn");
 const exportStatus = document.querySelector("#exportStatus");
 const downloadLink = document.querySelector("#downloadLink");
@@ -105,11 +108,78 @@ function buildSlidesFromContract(rawText) {
   ];
 }
 
+
+function buildNarration(slide) {
+  return `重要ポイントです。${slide.title}。${slide.body}`;
+}
+
+function speakCurrentSlide() {
+  if (!voiceEnabled || !window.speechSynthesis) {
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(buildNarration(slides[currentSlide]));
+  utterance.lang = "ja-JP";
+  utterance.rate = 1;
+  utterance.pitch = 1;
+  window.speechSynthesis.speak(utterance);
+}
+
+function setVoiceStatus(text) {
+  if (voiceStatus) {
+    voiceStatus.textContent = text;
+  }
+}
+
+function drawIllustration(index) {
+  const x = 930;
+  const y = 190;
+  canvasContext.save();
+  canvasContext.translate(x, y);
+  canvasContext.fillStyle = "rgba(242, 192, 120, 0.9)";
+  canvasContext.strokeStyle = "#fff";
+  canvasContext.lineWidth = 5;
+
+  if (index % 3 === 0) {
+    drawRoundedRect(canvasContext, 0, 0, 230, 150, 18);
+    canvasContext.fill();
+    canvasContext.stroke();
+    canvasContext.fillStyle = "#173f43";
+    canvasContext.fillRect(20, 35, 190, 16);
+    canvasContext.fillRect(20, 66, 160, 16);
+  } else if (index % 3 === 1) {
+    canvasContext.beginPath();
+    canvasContext.arc(90, 70, 58, 0, Math.PI * 2);
+    canvasContext.fill();
+    canvasContext.beginPath();
+    canvasContext.arc(170, 95, 46, 0, Math.PI * 2);
+    canvasContext.fill();
+    canvasContext.beginPath();
+    canvasContext.moveTo(22, 148);
+    canvasContext.lineTo(228, 148);
+    canvasContext.stroke();
+  } else {
+    canvasContext.beginPath();
+    canvasContext.moveTo(18, 130);
+    canvasContext.lineTo(86, 42);
+    canvasContext.lineTo(148, 86);
+    canvasContext.lineTo(212, 22);
+    canvasContext.lineTo(212, 130);
+    canvasContext.closePath();
+    canvasContext.fill();
+    canvasContext.stroke();
+  }
+
+  canvasContext.restore();
+}
+
 function renderSlide() {
   const slide = slides[currentSlide];
   slideLabel.textContent = `Slide ${currentSlide + 1} / ${slides.length}`;
   slideTitle.textContent = slide.title;
   slideBody.textContent = slide.body;
+  speakCurrentSlide();
 }
 
 function nextSlide() {
@@ -126,6 +196,7 @@ function stopPlayback() {
   window.clearInterval(timerId);
   timerId = null;
   playBtn.textContent = "再生";
+  if (window.speechSynthesis) { window.speechSynthesis.cancel(); }
 }
 
 function togglePlayback() {
@@ -208,6 +279,8 @@ function drawVideoSlide(slide, index, progress) {
     canvasContext.fillText(line, 116, 420 + lineIndex * 52);
   });
 
+  drawIllustration(index);
+
   canvasContext.fillStyle = "rgba(255, 255, 255, 0.18)";
   drawRoundedRect(canvasContext, 116, 624, 1048, 18, 9);
   canvasContext.fill();
@@ -254,7 +327,7 @@ async function exportVideoData() {
   exportBtn.disabled = true;
   exportBtn.textContent = "生成中...";
   downloadLink.hidden = true;
-  exportStatus.textContent = "動画データを生成中です。完了後に自動でダウンロードを開始します...";
+  exportStatus.textContent = "動画データを生成中です。イラスト入りで書き出します（音声ガイドはブラウザ再生時に利用できます）...";
 
   const chunks = [];
   let stream;
@@ -333,6 +406,16 @@ nextBtn.addEventListener("click", () => {
 });
 
 playBtn.addEventListener("click", togglePlayback);
+voiceBtn.addEventListener("click", () => {
+  voiceEnabled = !voiceEnabled;
+  voiceBtn.textContent = voiceEnabled ? "音声OFF" : "音声ON";
+  setVoiceStatus(voiceEnabled ? "音声ガイド: ON（重要ポイントを読み上げ中）" : "音声ガイド: OFF");
+  if (voiceEnabled) {
+    speakCurrentSlide();
+  } else if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+});
 exportBtn.addEventListener("click", exportVideoData);
 
 renderSlide();

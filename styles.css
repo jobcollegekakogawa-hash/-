@@ -460,3 +460,15 @@ textarea {
     padding: 28px;
   }
 }
+
+
+.voice-status {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #cde2ff;
+}
+
+.slide-illustration {
+  display: inline-flex;
+  gap: 8px;
+}
