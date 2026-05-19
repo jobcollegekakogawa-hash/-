@@ -47,6 +47,7 @@ const videoWidth = videoCanvas.width;
 const videoHeight = videoCanvas.height;
 const slideDurationMs = 4200;
 const exportFrameIntervalMs = 100;
+const exportFilePrefix = "contract-explanation";
 
 function extractFirstMatch(text, pattern, fallback) {
   const match = text.match(pattern);
@@ -356,6 +357,13 @@ function createRecorder(stream, chunks) {
   return recorder;
 }
 
+function buildExportFilename() {
+  const now = new Date();
+  const pad = (value) => String(value).padStart(2, "0");
+  const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+  return `${exportFilePrefix}-${timestamp}.webm`;
+}
+
 async function exportVideoData() {
   if (!window.MediaRecorder || !videoCanvas.captureStream) {
     exportStatus.textContent = "このブラウザは動画データ生成に対応していません。ChromeやEdgeでお試しください。";
@@ -366,10 +374,11 @@ async function exportVideoData() {
   slides = buildSlidesFromContract(contractText.value);
   currentSlide = 0;
   renderSlide();
+  drawVideoSlide(slides[currentSlide], currentSlide, 0);
   exportBtn.disabled = true;
   exportBtn.textContent = "生成中...";
   downloadLink.hidden = true;
-  exportStatus.textContent = "動画データを生成中です。イラスト入りで書き出します（音声ガイドはブラウザ再生時に利用できます）...";
+  exportStatus.textContent = "動画データ（WebM）を書き出し中です。完了後に自動ダウンロードします...";
 
   const chunks = [];
   let stream;
@@ -404,9 +413,11 @@ async function exportVideoData() {
       URL.revokeObjectURL(downloadLink.href);
     }
 
+    const filename = buildExportFilename();
     downloadLink.href = url;
+    downloadLink.download = filename;
     downloadLink.hidden = false;
-    exportStatus.textContent = `動画データを作成しました（${(blob.size / 1024 / 1024).toFixed(2)}MB）。自動で開始しない場合は下のリンクからダウンロードしてください。`;
+    exportStatus.textContent = `動画データを出力しました: ${filename}（${(blob.size / 1024 / 1024).toFixed(2)}MB）。自動で始まらない場合は下のリンクからダウンロードしてください。`;
     downloadLink.click();
   } catch (error) {
     exportStatus.textContent = `動画データの生成に失敗しました: ${error.message}`;
@@ -416,7 +427,7 @@ async function exportVideoData() {
     }
 
     exportBtn.disabled = false;
-    exportBtn.textContent = "動画データを作成";
+    exportBtn.textContent = "動画データを書き出す";
   }
 }
 
