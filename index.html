@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>契約書動画説明アプリ</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <nav class="nav" aria-label="メインナビゲーション">
+        <a class="brand" href="#top" aria-label="契約書動画説明アプリ ホーム">Contract Guide</a>
+        <div class="nav__links">
+          <a href="#flow">流れ</a>
+          <a href="#demo">デモ</a>
+          <a href="#signature">直筆署名</a>
+        </div>
+      </nav>
+
+      <section id="top" class="hero__content">
+        <p class="eyebrow">契約前の理解を、動画でわかりやすく</p>
+        <h1>契約書データから、説明動画風のガイドを自動作成</h1>
+        <p class="hero__lead">
+          契約書テキストを読み込むと、重要ポイント・注意事項・確認ステップをスライド化。
+          最後は電子署名ではなく、直筆署名に進む運用を想定したプロトタイプです。
+        </p>
+        <div class="hero__actions">
+          <a class="button button--primary" href="#demo">デモを試す</a>
+          <a class="button button--ghost" href="#flow">仕組みを見る</a>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <section id="flow" class="section">
+        <div class="section__heading">
+          <p class="eyebrow">Workflow</p>
+          <h2>想定する利用フロー</h2>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <span class="card__number">01</span>
+            <h3>契約書をアップロード</h3>
+            <p>PDFやWordから抽出したテキストを貼り付け、またはテキストファイルを読み込みます。</p>
+          </article>
+          <article class="card">
+            <span class="card__number">02</span>
+            <h3>説明動画を再生</h3>
+            <p>契約内容の要点、金額、期間、解約条件、リスク確認を動画風スライドで案内します。</p>
+          </article>
+          <article class="card">
+            <span class="card__number">03</span>
+            <h3>理解確認を記録</h3>
+            <p>確認チェックを行い、疑問点がある場合は署名前に担当者へ戻せる導線を用意します。</p>
+          </article>
+          <article class="card">
+            <span class="card__number">04</span>
+            <h3>直筆署名へ</h3>
+            <p>説明完了後、印刷済みの契約書へ直筆で署名していただく案内を表示します。</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="demo" class="section section--accent">
+        <div class="app-shell">
+          <div class="panel panel--input">
+            <div class="section__heading section__heading--left">
+              <p class="eyebrow">Demo</p>
+              <h2>契約書データを入力</h2>
+              <p>以下に契約書の本文や要約を貼り付けると、説明スライドを作成します。</p>
+            </div>
+
+            <label class="upload-box" for="contractFile">
+              <input id="contractFile" type="file" accept=".txt,.doc,.docx,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+              <span>テキストファイルを選択</span>
+              <small>.txt / .doc / .docx を読み込み、必要に応じて .txt 変換できます</small>
+            </label>
+
+            <label class="field" for="contractText">
+              <span>契約書本文</span>
+              <textarea id="contractText" rows="12" placeholder="例：本契約の期間は2026年6月1日から1年間とする。**解約通知は30日前**。月額利用料は...">本契約の期間は2026年6月1日から1年間とする。
+月額利用料は50,000円とし、毎月末日までに支払う。
+契約を解約する場合は、解約希望日の30日前までに書面で通知する。
+個人情報および営業秘密を第三者へ開示してはならない。
+契約違反があった場合、相手方は催告のうえ契約を解除できる。</textarea>
+            </label>
+
+            <button id="generateBtn" class="button button--primary" type="button">説明動画を作成</button>
+          </div>
+
+          <div class="panel panel--video" aria-live="polite">
+            <div class="video-card">
+              <div class="video-card__topbar">
+                <span></span><span></span><span></span>
+                <strong>説明動画プレビュー</strong>
+              </div>
+              <div class="slide-stage">
+                <p id="slideLabel" class="slide-stage__label">Slide 1 / 5</p>
+                <h3 id="slideTitle">契約書説明を開始します</h3>
+                <p id="slideBody">左の契約書データから、重要な確認ポイントを抽出して説明します。</p>
+                <p id="voiceStatus" class="voice-status">音声ガイド: OFF</p>
+              </div>
+              <div class="video-controls">
+                <button id="prevBtn" class="control" type="button">戻る</button>
+                <button id="playBtn" class="control control--primary" type="button">再生</button>
+                <button id="voiceBtn" class="control" type="button">音声ON</button>
+                <button id="nextBtn" class="control" type="button">次へ</button>
+              </div>
+            </div>
+
+            <div class="export-card">
+              <div>
+                <h3>動画データを書き出し</h3>
+                <p id="exportStatus">入力中のプレーンテキストからWebM動画ファイルを生成し、完了後にダウンロードできます。</p>
+              </div>
+              <button id="exportBtn" class="button button--primary" type="button">動画データを書き出す</button>
+              <a id="downloadLink" class="button button--ghost-dark" href="#" download="contract-explanation.webm" hidden>生成済みWebMをダウンロード</a>
+            </div>
+
+            <canvas id="videoCanvas" width="1280" height="720" hidden></canvas>
+
+            <div class="checklist" id="checklist">
+              <h3>説明後の確認</h3>
+              <label><input type="checkbox" /> 契約期間と更新・終了条件を確認しました</label>
+              <label><input type="checkbox" /> 金額、支払期日、追加費用を確認しました</label>
+              <label><input type="checkbox" /> 守秘義務・禁止事項・解除条件を確認しました</label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="signature" class="section signature">
+        <div>
+          <p class="eyebrow">Handwritten Signature</p>
+          <h2>最後の署名は直筆で</h2>
+          <p>
+            このアプリは契約書の説明と理解確認を支援し、署名そのものは紙の契約書へ直筆で行う運用を想定しています。
+            署名前に不明点が残る場合は、担当者へ確認してから進める設計です。
+          </p>
+        </div>
+        <div class="signature__box">
+          <span>署名欄イメージ</span>
+          <div class="signature__line"></div>
+          <small>説明完了後、紙面へご本人が直筆署名</small>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>※本プロトタイプは契約理解の補助を目的としたデモです。法的助言や電子署名機能は含みません。</p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
