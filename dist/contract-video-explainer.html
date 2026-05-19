@@ -803,6 +803,18 @@ function drawIllustration(index) {
   canvasContext.restore();
 }
 
+function getImportanceLabel(slide) {
+  if (/(解除|解約|違反|期限|支払)/.test(slide.title + slide.body)) {
+    return "重要度: 高";
+  }
+
+  if (/(金額|期間|更新|通知|秘密|個人情報)/.test(slide.title + slide.body)) {
+    return "重要度: 中";
+  }
+
+  return "重要度: 基本";
+}
+
 function renderSlide() {
   const slide = slides[currentSlide];
   slideLabel.textContent = `Slide ${currentSlide + 1} / ${slides.length}`;
@@ -893,6 +905,8 @@ function drawVideoSlide(slide, index, progress) {
   canvasContext.fillStyle = "#f2c078";
   canvasContext.font = "700 30px system-ui, sans-serif";
   canvasContext.fillText(`CONTRACT GUIDE  |  SLIDE ${index + 1} / ${slides.length}`, 116, 132);
+  canvasContext.font = "700 24px system-ui, sans-serif";
+  canvasContext.fillText(getImportanceLabel(slide), 930, 132);
 
   canvasContext.fillStyle = "#ffffff";
   canvasContext.font = "800 64px system-ui, sans-serif";
@@ -906,6 +920,13 @@ function drawVideoSlide(slide, index, progress) {
   const bodyLines = splitTextIntoLines(canvasContext, slide.body, 990).slice(0, 5);
   bodyLines.forEach((line, lineIndex) => {
     canvasContext.fillText(line, 116, 420 + lineIndex * 52);
+  });
+
+  canvasContext.fillStyle = "rgba(255, 255, 255, 0.92)";
+  canvasContext.font = "500 24px system-ui, sans-serif";
+  const narrationLines = splitTextIntoLines(canvasContext, `音声ガイド: ${buildNarration(slide)}`, 980).slice(0, 2);
+  narrationLines.forEach((line, lineIndex) => {
+    canvasContext.fillText(line, 116, 600 + lineIndex * 32);
   });
 
   drawIllustration(index);
